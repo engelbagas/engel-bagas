@@ -12,8 +12,8 @@
 </head>
 <body>
 
-    <!-- ====== شاشة الدخول والتسجيل ====== -->
-    <div id="auth-screen">
+    <!-- صفحة تسجيل الدخول / إنشاء حساب -->
+    <div id="page-auth">
         <div class="auth-box">
             <div id="login-form">
                 <h2>تسجيل الدخول</h2>
@@ -36,41 +36,66 @@
         </div>
     </div>
 
-    <!-- ====== التطبيق الرئيسي ====== -->
+    <!-- التطبيق الرئيسي (بعد الدخول) -->
     <div id="app-container" style="display:none;">
+        
+        <!-- القائمة الجانبية (لجميع الأدوار) -->
         <div id="sidebar">
             <div class="profile-area">
                 <img id="profile-img-sidebar" src="" alt="User" class="user-avatar">
                 <h3 id="user-display-name">زائر</h3>
                 <p id="user-role-display" class="user-role">مستخدم</p>
-                <div id="user-balance" class="balance">$ 0</div>
+                <div id="user-balance" class="balance">الرصيد: $0</div>
             </div>
+            
+            <!-- أزرار القائمة الجانبية (كل زر يفتح صفحته الخاصة) -->
             <div class="top-actions">
                 <button class="action-btn">❤️</button>
-                <button onclick="openSettings()" class="action-btn">👤</button>
+                <button onclick="openPage('settings')" class="action-btn">👤</button>
                 <button onclick="logout()" class="action-btn logout">🚪</button>
             </div>
-            <button class="currency-toggle">🔄 SYP العملة الثانوية</button>
-            <nav class="sidebar-menu">
-                <a href="#" class="menu-item"><span>الرئيسية</span><span class="icon">🏠</span></a>
-                <a href="#" class="menu-item"><span>الاشعارات</span><span class="icon">🔔</span></a>
-                <a href="#" onclick="showTopupPage()" class="menu-item highlight"><span>إضافة رصيد</span><span class="icon">💰</span></a>
-                <a href="#" class="menu-item"><span>دفعاتي</span><span class="icon">💳</span></a>
-                <a href="#" class="menu-item"><span>محفظتي</span><span class="icon">🛒</span></a>
-                <a href="#" class="menu-item"><span>طلباتي</span><span class="icon">🧾</span></a>
-                <a href="#" class="menu-item"><span>وكولونا</span><span class="icon">🤝</span></a>
-                <a href="#" class="menu-item"><span>الحماية</span><span class="icon">🛡️</span></a>
-                <a href="#" class="menu-item"><span>تحقق الهوية</span><span class="icon">✅</span></a>
-                <a href="#" class="menu-item"><span>من نحن</span><span class="icon">ℹ️</span></a>
+            
+            <nav class="menu-items">
+                <a href="#" onclick="openPage('home')" class="menu-link highlight"><span>الرئيسية</span><span class="icon">🏠</span></a>
+                <a href="#" onclick="openPage('notifications')" class="menu-link"><span>الاشعارات</span><span class="icon">🔔</span></a>
+                <a href="#" onclick="openPage('topup')" class="menu-link"><span>إضافة رصيد</span><span class="icon">💰</span></a>
+                <a href="#" onclick="openPage('payments')" class="menu-link"><span>دفعاتي</span><span class="icon">💳</span></a>
+                <a href="#" onclick="openPage('wallet')" class="menu-link"><span>محفظتي</span><span class="icon">🛒</span></a>
+                <a href="#" onclick="openPage('orders')" class="menu-link"><span>طلباتي</span><span class="icon">🧾</span></a>
+                <a href="#" onclick="openPage('affiliates')" class="menu-link"><span>وكولونا</span><span class="icon">🤝</span></a>
+                <a href="#" onclick="openPage('security')" class="menu-link"><span>الحماية</span><span class="icon">🛡️</span></a>
+                <a href="#" onclick="openPage('verify')" class="menu-link"><span>تحقق الهوية</span><span class="icon">✅</span></a>
+                <a href="#" onclick="openPage('about')" class="menu-link"><span>من نحن</span><span class="icon">ℹ️</span></a>
             </nav>
         </div>
 
+        <!-- محتوى الصفحات -->
         <div id="main-content">
             
+            <!-- صفحة المتجر الرئيسية (للمستخدم) -->
+            <div id="page-home" class="app-page">
+                <h2>المتجر</h2>
+                <div id="shop-products" class="card"></div>
+            </div>
+
+            <!-- صفحة إضافة رصيد (شام كاش) -->
+            <div id="page-topup" class="app-page" style="display:none;">
+                <h2>إضافة رصيد</h2>
+                <div class="card">
+                    <div style="text-align:center;"><div id="qrcode" style="background:white; padding:10px; display:inline-block; border-radius:10px;"></div></div>
+                    <p><b>رقم المحفظة:</b> <span id="wallet-number">06cc35f089a2...</span></p>
+                    <p><b>المبلغ (L.S):</b> <span id="topup-amount-display">0</span></p>
+                    <div class="timer-circle" id="timer-circle" style="margin:10px auto;">20</div>
+                    <input type="number" id="topup-amount" placeholder="المبلغ المراد شحنه">
+                    <input type="text" id="sham-transaction-id" placeholder="رقم العملية من التطبيق">
+                    <button onclick="completeShamCashTopup()" class="btn-primary">إتمام الطلب</button>
+                </div>
+            </div>
+
             <!-- صفحة الإعدادات الشخصية -->
-            <div id="settings-panel" style="display:none;">
+            <div id="page-settings" class="app-page" style="display:none;">
                 <h2>الإعدادات الشخصية</h2>
-                <div class="section">
+                <div class="card">
                     <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
                         <img id="settings-profile-img" src="" style="width:80px; height:80px; border-radius:50%; border:2px solid #4CAF50; object-fit:cover;">
                         <div>
@@ -84,11 +109,10 @@
                     <input type="text" id="edit-name-input">
                     <label>تعديل البريد الإلكتروني:</label>
                     <input type="email" id="edit-email-input">
-                    <label>كلمة مرور جديدة (اتركها فارغة إذا لا تريد التغيير):</label>
+                    <label>كلمة مرور جديدة (اتركها فارغة):</label>
                     <input type="password" id="edit-password-input">
                     <input type="password" id="edit-password-confirm" placeholder="تأكيد كلمة المرور">
-                    <button onclick="saveUserSettings()" style="background:#4CAF50; width:100%; margin-top:10px;">حفظ الإعدادات</button>
-                    <button onclick="closeSettings()" style="background:#e74c3c; width:100%;">إغلاق</button>
+                    <button onclick="saveUserSettings()" class="btn-success">حفظ التغييرات</button>
                 </div>
             </div>
 
@@ -104,66 +128,38 @@
                 </div>
             </div>
 
-            <!-- واجهة شام كاش -->
-            <div id="topup-payment-wrapper" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center;">
-                <div class="section" style="width:90%; max-width:400px; border:1px solid #555;">
-                    <h3>شحن عبر شام كاش</h3>
-                    <div style="text-align:center;"><div id="qrcode" style="background:white; padding:10px; display:inline-block; border-radius:10px;"></div></div>
-                    <p><b>رقم المحفظة:</b> <span id="wallet-number">06cc35f089a2dd0b31d0144fd2627009</span></p>
-                    <p><b>المبلغ (L.S):</b> <span id="topup-amount-display">0</span></p>
-                    <div class="timer-circle" id="timer-circle" style="margin:10px auto;">20</div>
-                    <input type="number" id="topup-amount" placeholder="المبلغ المراد شحنه">
-                    <input type="text" id="sham-transaction-id" placeholder="رقم العملية من التطبيق">
-                    <button onclick="completeShamCashTopup()" style="background:#2ecc71; width:100%;">إتمام الطلب</button>
-                    <button onclick="closeTopupPage()" style="background:#e74c3c; width:100%;">إغلاق</button>
-                </div>
+            <!-- ====== صفحات الإدارة (الأدوار فقط) ====== -->
+            <!-- صفحة لوحة المدير -->
+            <div id="page-admin" class="app-page" style="display:none;">
+                <h2>لوحة المدير</h2>
+                <div class="card"><label>اسم المتجر:</label><input type="text" id="store-name"><button onclick="saveStoreSettings()" class="btn-primary">حفظ</button></div>
+                <div class="card"><h3>طلبات التعبئة</h3><div id="admin-topups"></div></div>
+                <div class="card"><h3>المستخدمين</h3><div id="users-list"></div></div>
             </div>
 
-            <!-- ====== لوحات الصلاحيات ====== -->
-            <div id="role-content">
-                <!-- لوحة المدير -->
-                <div id="admin-panel" class="role-panel" style="display:none;">
-                    <h2>لوحة المدير</h2>
-                    <div class="section">
-                        <label>اسم المتجر:</label><input type="text" id="store-name"><button onclick="saveStoreSettings()">حفظ</button>
-                    </div>
-                    <div class="section">
-                        <h3>طلبات التعبئة (قبول/رفض)</h3>
-                        <div id="admin-topups"></div>
-                    </div>
-                    <div class="section">
-                        <h3>إدارة المستخدمين</h3>
-                        <div id="users-list"></div>
-                    </div>
-                </div>
-
-                <!-- لوحة معاون المدير -->
-                <div id="coadmin-panel" class="role-panel" style="display:none;">
-                    <h2>لوحة المعاون</h2>
-                    <div class="section">
-                        <h3>طلبات التعبئة (قبول/رفض)</h3>
-                        <div id="coadmin-topups"></div>
-                    </div>
-                </div>
-
-                <!-- لوحة المشرف -->
-                <div id="supervisor-panel" class="role-panel" style="display:none;">
-                    <h2>لوحة المشرف</h2>
-                    <div class="section">
-                        <label>إضافة منتج:</label><input type="text" id="prod-name" placeholder="اسم المنتج"><input type="number" id="prod-price" placeholder="السعر"><button onclick="addProduct()">إضافة</button>
-                    </div>
-                    <div class="section">
-                        <h3>منتجاتي (تعديل السعر)</h3>
-                        <div id="my-products-list"></div>
-                    </div>
-                </div>
-
-                <!-- لوحة المستخدم -->
-                <div id="user-panel" class="role-panel" style="display:none;">
-                    <h2>المتجر</h2>
-                    <div id="shop-products" class="section"></div>
-                </div>
+            <!-- صفحة لوحة المعاون -->
+            <div id="page-coadmin" class="app-page" style="display:none;">
+                <h2>لوحة المعاون</h2>
+                <div class="card"><h3>طلبات التعبئة</h3><div id="coadmin-topups"></div></div>
             </div>
+
+            <!-- صفحة لوحة المشرف -->
+            <div id="page-supervisor" class="app-page" style="display:none;">
+                <h2>لوحة المشرف</h2>
+                <div class="card"><label>إضافة منتج:</label><input type="text" id="prod-name"><input type="number" id="prod-price"><button onclick="addProduct()" class="btn-primary">إضافة</button></div>
+                <div class="card"><h3>منتجاتي (تعديل السعر)</h3><div id="my-products-list"></div></div>
+            </div>
+            
+            <!-- صفحات إضافية فارغة (أزرار القائمة الإضافية) -->
+            <div id="page-notifications" class="app-page" style="display:none;"><h2>الاشعارات</h2><div class="card">لا توجد إشعارات حالياً.</div></div>
+            <div id="page-payments" class="app-page" style="display:none;"><h2>دفعاتي</h2><div class="card">سجل دفعاتك هنا.</div></div>
+            <div id="page-wallet" class="app-page" style="display:none;"><h2>محفظتي</h2><div class="card">تفاصيل المحفظة.</div></div>
+            <div id="page-orders" class="app-page" style="display:none;"><h2>طلباتي</h2><div class="card">طلباتك السابقة.</div></div>
+            <div id="page-affiliates" class="app-page" style="display:none;"><h2>وكولونا</h2><div class="card">نظام الوكالة.</div></div>
+            <div id="page-security" class="app-page" style="display:none;"><h2>الحماية</h2><div class="card">إعدادات الحماية.</div></div>
+            <div id="page-verify" class="app-page" style="display:none;"><h2>تحقق الهوية</h2><div class="card">رفع الوثائق للتحقق.</div></div>
+            <div id="page-about" class="app-page" style="display:none;"><h2>من نحن</h2><div class="card">معلومات المتجر.</div></div>
+
         </div>
     </div>
 
