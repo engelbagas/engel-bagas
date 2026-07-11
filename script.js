@@ -1,83 +1,137 @@
 import { auth, db, storage } from './firebase-config.js';
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js";
-import { doc, getDoc, setDoc, collection, getDocs, query, where, addDoc, updateDoc, deleteDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js";
+import { doc, getDoc, setDoc, collection, getDocs, query, where, addDoc, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js";
 
-// ============ 1. تسجيل الدخول (الصفحة تفتح بنظام الصلاحيات) ============
+// ============ 1. التبديل بين تسجيل الدخول وإنشاء الحساب ============
+window.toggleAuthForm = function(type) {
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    if (type === 'signup') {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+    } else {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+    }
+}
+
+// ============ 2. إنشاء حساب جديد (زر إنشاء الحساب) ============
+window.handleSignUp = async function() {
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    if(!name || !email || !password) return alert("الرجاء ملء جميع الحقول");
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // إنشاء وثيقة جديدة للمستخدم في قاعدة البيانات (الدور الافتراضي هو 'user')
+        await setDoc(doc(db, "users", user.uid), {
+            displayName: name,
+            email: email,
+            role: "user", // الدور الافتراضي!
+            balance: 0,
+            isBanned: false
+        });
+        alert("تم إنشاء الحساب بنجاح! جارٍ تسجيل الدخول...");
+        
+        // الدخول التلقائي سيحدث عبر onAuthStateChanged أدناه
+    } catch (error) {
+        console.error(error);
+        if(error.code === 'auth/email-already-in-use') {
+            alert("هذا البريد الإلكتروني مستخدم بالفعل!");
+        } else {
+            alert("حدث خطأ أثناء إنشاء الحساب، حاول مجدداً.");
+        }
+    }
+}
+
+// ============ 3. استعادة كلمة المرور (نسيت كلمة المرور) ============
+window.resetPassword = async function() {
+    const email = prompt("الرجاء إدخال البريد الإلكتروني لاستعادة كلمة المرور:");
+    if (email) {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert("تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني. يرجى تفقد صندوق الوارد (أو البريد المزعج).");
+        } catch (error) {
+            alert("حدث خطأ، تأكد من صحة البريد الإلكتروني.");
+        }
+    }
+}
+
+// ============ 4. تسجيل الدخول (زر الدخول) ============
 let currentUserData = null;
 
-// الدالة اللي بتناديك لما تضغط زر دخول في HTML
 window.handleLogin = async function() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        
-        // نروح نجيب بياناته من قاعدة البيانات (الدور، الرصيد، الخ) بواسطة UID
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            currentUserData = userDoc.data();
-            currentUserData.uid = user.uid;
-            renderDashboard(currentUserData); // ننادي رسم الواجهة
-        } else {
-            alert("هذا الحساب غير موجود في قاعدة بيانات الموظفين، يرجى التواصل مع المدير.");
-        }
+        await fetchUserAndRender(user.uid);
     } catch (error) {
         console.error(error);
         alert("البريد أو كلمة المرور خطأ!");
     }
 }
 
-// ============ 2. رسم الواجهة بناءً على الدور (أهم دالة بالكود) ============
+// دالة مساعدة لجلب بيانات المستخدم من قاعدة البيانات
+async function fetchUserAndRender(uid) {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (userDoc.exists()) {
+        currentUserData = userDoc.data();
+        currentUserData.uid = uid;
+        renderDashboard(currentUserData); 
+    } else {
+        alert("هذا الحساب غير موجود في قاعدة بيانات النظام، يرجى التواصل مع المدير.");
+        signOut(auth);
+    }
+}
+
+// ============ 5. رسم الواجهة حسب الدور (أهم دالة) ============
 function renderDashboard(user) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
     
-    // تحديث بيانات القائمة الجانبية
     document.getElementById('user-display-name').innerText = user.displayName || "زائر";
-    document.getElementById('user-role-display').innerText = user.role === 'admin' ? 'مدير' : user.role === 'co_admin' ? 'معاون مدير' : user.role === 'supervisor' ? 'مشرف' : 'مستخدم';
+    const roleName = user.role === 'admin' ? 'مدير' : user.role === 'co_admin' ? 'معاون مدير' : user.role === 'supervisor' ? 'مشرف' : 'مستخدم';
+    document.getElementById('user-role-display').innerText = roleName;
     document.getElementById('user-balance').innerText = `$${user.balance || 0}`;
 
-    // إخفاء كل اللوحات
     document.querySelectorAll('.role-panel').forEach(el => el.style.display = 'none');
 
-    // إظهار اللوحة المناسبة
     if (user.role === 'admin') {
         document.getElementById('admin-panel').style.display = 'block';
-        loadStoreSettings(); // نقرأ إعدادات المتجر ليملأ الحقول للمدير
-        loadUsersList(); // نجيب المستخدمين
-        loadTopupRequests('topup-requests-list'); // نجيب طلبات الشحن
-        loadPaymentMethods(); // نجيب طرق الدفع
-    } 
-    else if (user.role === 'co_admin') {
+        loadStoreSettings();
+        loadUsersList();
+        loadTopupRequests('topup-requests-list');
+        loadPaymentMethods();
+    } else if (user.role === 'co_admin') {
         document.getElementById('co-admin-panel').style.display = 'block';
-        loadTopupRequests('co-topup-requests-list'); // نجيب طلبات الشحن للمعاون
-    } 
-    else if (user.role === 'supervisor') {
+        loadTopupRequests('co-topup-requests-list');
+    } else if (user.role === 'supervisor') {
         document.getElementById('supervisor-panel').style.display = 'block';
-        loadMyProducts(user.uid); // فقط منتجاته
-    } 
-    else if (user.role === 'user') {
+        loadMyProducts(user.uid);
+    } else {
         document.getElementById('user-panel').style.display = 'block';
-        loadShopProducts(); // المتجر
-        loadAvailablePaymentMethods(); // طرق الدفع المتاحة
+        loadShopProducts();
+        loadAvailablePaymentMethods();
     }
 }
 
-// ============ 3. دوال المدير (إعدادات المتجر والصور) ============
+// ============ 6. دوال المدير (إعدادات المتجر) ============
 window.saveStoreSettings = async function() {
     const settings = {
         storeName: document.getElementById('store-name-input').value,
         terms: document.getElementById('terms-input').value,
     };
-    // لو رفع صورة، نعمل رفع لـ Firebase Storage
     const file = document.getElementById('shipping-image-input').files[0];
     if (file) {
         const storageRef = ref(storage, `settings/shipping_image_${Date.now()}`);
         await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        settings.shippingImage = url;
+        settings.shippingImage = await getDownloadURL(storageRef);
     }
     await setDoc(doc(db, "settings", "store_config"), settings, { merge: true });
     alert("تم حفظ إعدادات المتجر بنجاح!");
@@ -86,48 +140,37 @@ window.saveStoreSettings = async function() {
 async function loadStoreSettings() {
     const snap = await getDoc(doc(db, "settings", "store_config"));
     if (snap.exists()) {
-        const data = snap.data();
-        document.getElementById('store-name-input').value = data.storeName || '';
-        document.getElementById('terms-input').value = data.terms || '';
+        document.getElementById('store-name-input').value = snap.data().storeName || '';
+        document.getElementById('terms-input').value = snap.data().terms || '';
     }
 }
 
-// ============ 4. إضافة طرق دفع ديناميكية (للمدير) ============
+// ============ 7. طرق الدفع للمدير ============
 window.addPaymentMethod = async function() {
     const type = document.getElementById('payment-type-dropdown').value;
     const config = document.getElementById('new-payment-config').value;
-    if(!config) return alert("الرجاء إدخال رقم المحفظة أو بيانات الدفع");
+    if(!config) return alert("الرجاء إدخال بيانات الدفع");
 
     const snap = await getDoc(doc(db, "settings", "store_config"));
     let methods = snap.exists() && snap.data().paymentMethods ? snap.data().paymentMethods : [];
-    
     methods.push({ id: type, name: type, enabled: true, config: config });
     await setDoc(doc(db, "settings", "store_config"), { paymentMethods: methods }, { merge: true });
-    alert("تم إضافة طريقة الدفع. سيتم عرضها للمستخدمين فوراً!");
-    loadPaymentMethods();
+    alert("تم إضافة طريقة الدفع.");
 }
 
-async function loadPaymentMethods() {
-    const snap = await getDoc(doc(db, "settings", "store_config"));
-    if(snap.exists()) {
-        // هنا المدير يشوفهم
-    }
-}
-
-// ============ 5. دوال الشحن (المستخدم يطلب، المدير/المعاون يقبل/يرفض) ============
+// ============ 8. الشحن والطلبات (للمستخدم + قبول المدير) ============
 window.createTopupRequest = async function() {
     const amount = parseFloat(document.getElementById('topup-amount').value);
     if(!amount) return alert("أدخل المبلغ");
     await addDoc(collection(db, "topups"), {
         userId: currentUserData.uid,
         amount: amount,
-        status: "pending", // مبدئياً معلق
+        status: "pending",
         createdAt: new Date()
     });
-    alert("تم إرسال طلب الشحن. يرجى انتظار موافقة الإدارة.");
+    alert("تم إرسال طلب الشحن، انتظر الموافقة.");
 }
 
-// دالة تحميل طلبات الشحن للمدير/المعاون (تستمع للتحديثات الفورية)
 function loadTopupRequests(listId) {
     const q = query(collection(db, "topups"), where("status", "==", "pending"));
     onSnapshot(q, (snapshot) => {
@@ -147,42 +190,32 @@ function loadTopupRequests(listId) {
     });
 }
 
-// عند الضغط على قبول أو رفض
 window.handleTopup = async function(docId, status, amount, userId) {
     if(status === 'approved') {
-        // 1. نعدل حالة الطلب
         await updateDoc(doc(db, "topups", docId), { status: status });
-        // 2. نضيف المبلغ لرصيد المستخدم
         await updateDoc(doc(db, "users", userId), { balance: increment(amount) });
-        alert("تم قبول الشحن وإضافة المبلغ للرصيد.");
+        alert("تم قبول الشحن.");
     } else {
         await updateDoc(doc(db, "topups", docId), { status: status });
         alert("تم رفض الشحن.");
     }
 }
 
-// ============ 6. دوال المشرف (منتجاتي فقط) ============
+// ============ 9. دوال المشرف (منتجاتي) ============
 window.addProduct = async function() {
     const name = document.getElementById('product-name').value;
     const price = document.getElementById('product-price').value;
     const file = document.getElementById('product-image').files[0];
     if(!name || !price) return alert("املأ البيانات");
-
     let imageUrl = "";
     if(file) {
         const storageRef = ref(storage, `products/${Date.now()}`);
         await uploadBytes(storageRef, file);
         imageUrl = await getDownloadURL(storageRef);
     }
-
     await addDoc(collection(db, "products"), {
-        name: name,
-        price: parseFloat(price),
-        image: imageUrl,
-        createdBy: currentUserData.uid, // يربط المنتج بالمشرف
-        createdAt: new Date()
+        name: name, price: parseFloat(price), image: imageUrl, createdBy: currentUserData.uid
     });
-    alert("تمت إضافة المنتج");
     loadMyProducts(currentUserData.uid);
 }
 
@@ -196,21 +229,19 @@ function loadMyProducts(userId) {
             list.innerHTML += `
                 <div class="admin-section">
                     <p>${p.name} - سعر: ${p.price}</p>
-                    <input type="number" id="price-update-${doc.id}" placeholder="سعر جديد" value="${p.price}">
+                    <input type="number" id="price-update-${doc.id}" value="${p.price}">
                     <button onclick="updatePrice('${doc.id}')">تحديث السعر</button>
                 </div>
             `;
         });
     });
 }
-
 window.updatePrice = async function(docId) {
     const newPrice = document.getElementById(`price-update-${docId}`).value;
     await updateDoc(doc(db, "products", docId), { price: parseFloat(newPrice) });
-    alert("تم تحديث السعر");
 }
 
-// ============ 7. دوال المستخدم (الشراء) ============
+// ============ 10. دوال المستخدم (الشراء والمتجر) ============
 function loadShopProducts() {
     onSnapshot(collection(db, "products"), (snapshot) => {
         const list = document.getElementById('products-shop-list');
@@ -226,23 +257,14 @@ function loadShopProducts() {
         });
     });
 }
-
-// دالة الشراء
 window.buyProduct = async function(productId, price) {
-    if(price > currentUserData.balance) return alert("رصيدك لا يكفي، يرجى إضافة رصيد عبر شام كاش أولاً.");
+    if(price > currentUserData.balance) return alert("رصيدك لا يكفي، يرجى الشحن أولاً.");
     await updateDoc(doc(db, "users", currentUserData.uid), { balance: increment(-price) });
-    alert("تم الشراء بنجاح!");
     currentUserData.balance -= price;
     document.getElementById('user-balance').innerText = `$${currentUserData.balance}`;
 }
 
-// ============ 8. دوال عامة (خروج، إدارة المستخدمين للمدير) ============
-window.logout = function() {
-    signOut(auth).then(() => {
-        location.reload(); // يرجع الصفحة لتسجيل الدخول
-    });
-}
-
+// ============ 11. دوال الإدارة (المستخدمين) للمدير ============
 function loadUsersList() {
     onSnapshot(collection(db, "users"), (snapshot) => {
         const list = document.getElementById('users-management-list');
@@ -266,16 +288,13 @@ window.setRole = async function(uid, role) {
     await updateDoc(doc(db, "users", uid), { role: role });
 }
 
-// تحقق من حالة الدخول تلقائياً
+// ============ 12. تسجيل الخروج ومراقبة الحالة ============
+window.logout = function() {
+    signOut(auth).then(() => location.reload());
+}
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // لو رجع الصفحة، يرجع يفتحها
-        getDoc(doc(db, "users", user.uid)).then((snap) => {
-            if(snap.exists()) {
-                currentUserData = snap.data();
-                currentUserData.uid = user.uid;
-                renderDashboard(currentUserData);
-            }
-        });
+        fetchUserAndRender(user.uid);
     }
 });
