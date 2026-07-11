@@ -1,1 +1,48 @@
-<insert the CSS code from above here>
+body { 
+    font-family: 'Tajawal', sans-serif; 
+    background: #121212; 
+    color: #fff; 
+    margin: 0; 
+    padding: 0; 
+    direction: rtl;
+}
+#login-screen { 
+    display: flex; justify-content: center; align-items: center; height: 100vh; 
+    background: #0d0d0d;
+}
+.login-box { 
+    background: #1e1e1e; padding: 30px; border-radius: 15px; 
+    width: 300px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+.login-box input { 
+    width: 90%; padding: 10px; margin: 10px 0; border-radius: 8px; border: none; 
+    background: #333; color: white;
+}
+.login-box button { 
+    width: 100%; padding: 10px; background: #4CAF50; border: none; 
+    border-radius: 8px; color: white; font-weight: bold; cursor: pointer;
+}
+#app-container { display: flex; height: 100vh; }
+#sidebar { 
+    width: 250px; background: #1e1e1e; padding: 20px; 
+    box-shadow: 2px 0 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+}
+.profile-area { text-align: center; }
+.user-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #4CAF50; }
+.user-role { color: #4CAF50; font-size: 14px; }
+.balance { background: #2a2a2a; padding: 10px; border-radius: 10px; margin: 10px 0; font-weight: bold; }
+.logout-btn { background: #e74c3c; padding: 10px; border: none; border-radius: 8px; color: white; cursor: pointer; margin-top: auto;}
+#main-content { flex: 1; padding: 20px; overflow-y: auto; }
+.role-panel { display: none; }
+.admin-section { background: #1e1e1e; padding: 15px; margin-bottom: 20px; border-radius: 10px; }
+.admin-section input, .admin-section textarea, .admin-section select { 
+    background: #2a2a2a; border: 1px solid #444; color: white; 
+    padding: 8px; border-radius: 5px; margin: 5px 0; width: 100%; box-sizing: border-box;
+}
+button { 
+    background: #3498db; color: white; border: none; padding: 8px 15px; 
+    border-radius: 5px; cursor: pointer; margin: 5px 0;
+}
+button:hover { opacity: 0.9; }
+.approve-btn { background: #2ecc71; }
+.reject-btn { background: #e74c3c; }
