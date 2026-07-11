@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متجرك الإلكتروني</title>
     <link rel="stylesheet" href="style.css">
-    <!-- مكتبة الخطوط -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-    <!-- مكتبة إنشاء كود QR (سنستخدمها لإنشاء كود شام كاش) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-    <!-- ========== 1. شاشة الدخول والإنشاء ========== -->
+    <!-- ====== شاشة الدخول والتسجيل ====== -->
     <div id="auth-screen">
         <div class="auth-box">
             <div id="login-form">
@@ -31,37 +31,26 @@
                 <input type="email" id="signup-email" placeholder="البريد الإلكتروني">
                 <input type="password" id="signup-password" placeholder="كلمة المرور">
                 <button onclick="handleSignUp()">إنشاء الحساب</button>
-                <div class="auth-links">
-                    <a href="#" onclick="toggleAuth('login')">لديك حساب؟ سجل دخول</a>
-                </div>
+                <div class="auth-links"><a href="#" onclick="toggleAuth('login')">لديك حساب؟ سجل دخول</a></div>
             </div>
         </div>
     </div>
 
-    <!-- ========== 2. التطبيق الرئيسي ========== -->
+    <!-- ====== التطبيق الرئيسي ====== -->
     <div id="app-container" style="display:none;">
-        
-        <!-- القائمة الجانبية الكاملة -->
         <div id="sidebar">
             <div class="profile-area">
-                <img src="default-avatar.png" alt="User" class="user-avatar">
+                <img id="profile-img-sidebar" src="" alt="User" class="user-avatar">
                 <h3 id="user-display-name">زائر</h3>
-                <p id="user-id-display" style="font-size:12px; color:#888;">معرف: ---</p>
                 <p id="user-role-display" class="user-role">مستخدم</p>
                 <div id="user-balance" class="balance">$ 0</div>
             </div>
-            
-            <!-- أزرار الإجراءات العلوية (مفضلة، شخصي، خروج) -->
             <div class="top-actions">
                 <button class="action-btn">❤️</button>
-                <button class="action-btn">👤</button>
+                <button onclick="openSettings()" class="action-btn">👤</button>
                 <button onclick="logout()" class="action-btn logout">🚪</button>
             </div>
-
-            <!-- زر العملة -->
             <button class="currency-toggle">🔄 SYP العملة الثانوية</button>
-
-            <!-- القائمة الكاملة (14 زر) -->
             <nav class="sidebar-menu">
                 <a href="#" class="menu-item"><span>الرئيسية</span><span class="icon">🏠</span></a>
                 <a href="#" class="menu-item"><span>الاشعارات</span><span class="icon">🔔</span></a>
@@ -74,112 +63,105 @@
                 <a href="#" class="menu-item"><span>تحقق الهوية</span><span class="icon">✅</span></a>
                 <a href="#" class="menu-item"><span>من نحن</span><span class="icon">ℹ️</span></a>
             </nav>
-
-            <!-- الوضع الداكن -->
-            <div class="theme-toggle">
-                <span>الوضع الداكن</span>
-                <label class="switch">
-                    <input type="checkbox" checked onchange="toggleDarkMode()">
-                    <span class="slider round"></span>
-                </label>
-            </div>
         </div>
 
-        <!-- المحتوى الرئيسي -->
         <div id="main-content">
-            <!-- زر إغلاق القائمة للجوال -->
-            <button class="close-sidebar" onclick="toggleSidebar()">☰</button>
+            
+            <!-- صفحة الإعدادات الشخصية -->
+            <div id="settings-panel" style="display:none;">
+                <h2>الإعدادات الشخصية</h2>
+                <div class="section">
+                    <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
+                        <img id="settings-profile-img" src="" style="width:80px; height:80px; border-radius:50%; border:2px solid #4CAF50; object-fit:cover;">
+                        <div>
+                            <p><b>الاسم:</b> <span id="settings-name-display"></span></p>
+                            <p><b>البريد:</b> <span id="settings-email-display"></span></p>
+                        </div>
+                    </div>
+                    <label>رفع صورة جديدة (قص وتعديل):</label>
+                    <input type="file" id="avatar-upload" accept="image/*">
+                    <label>تعديل الاسم:</label>
+                    <input type="text" id="edit-name-input">
+                    <label>تعديل البريد الإلكتروني:</label>
+                    <input type="email" id="edit-email-input">
+                    <label>كلمة مرور جديدة (اتركها فارغة إذا لا تريد التغيير):</label>
+                    <input type="password" id="edit-password-input">
+                    <input type="password" id="edit-password-confirm" placeholder="تأكيد كلمة المرور">
+                    <button onclick="saveUserSettings()" style="background:#4CAF50; width:100%; margin-top:10px;">حفظ الإعدادات</button>
+                    <button onclick="closeSettings()" style="background:#e74c3c; width:100%;">إغلاق</button>
+                </div>
+            </div>
 
+            <!-- مودال قص الصورة -->
+            <div id="crop-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
+                <div style="background:#1e1e1e; padding:20px; border-radius:15px; max-width:400px; width:90%;">
+                    <h3>قص الصورة</h3>
+                    <img id="image-to-crop" src="" style="max-width:100%; display:block;">
+                    <div style="margin-top:15px; display:flex; gap:10px;">
+                        <button onclick="cropAndUpload()" style="background:#2ecc71; flex:1;">تأكيد</button>
+                        <button onclick="closeCropModal()" style="background:#e74c3c;">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- واجهة شام كاش -->
+            <div id="topup-payment-wrapper" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center;">
+                <div class="section" style="width:90%; max-width:400px; border:1px solid #555;">
+                    <h3>شحن عبر شام كاش</h3>
+                    <div style="text-align:center;"><div id="qrcode" style="background:white; padding:10px; display:inline-block; border-radius:10px;"></div></div>
+                    <p><b>رقم المحفظة:</b> <span id="wallet-number">06cc35f089a2dd0b31d0144fd2627009</span></p>
+                    <p><b>المبلغ (L.S):</b> <span id="topup-amount-display">0</span></p>
+                    <div class="timer-circle" id="timer-circle" style="margin:10px auto;">20</div>
+                    <input type="number" id="topup-amount" placeholder="المبلغ المراد شحنه">
+                    <input type="text" id="sham-transaction-id" placeholder="رقم العملية من التطبيق">
+                    <button onclick="completeShamCashTopup()" style="background:#2ecc71; width:100%;">إتمام الطلب</button>
+                    <button onclick="closeTopupPage()" style="background:#e74c3c; width:100%;">إغلاق</button>
+                </div>
+            </div>
+
+            <!-- ====== لوحات الصلاحيات ====== -->
             <div id="role-content">
-                <!-- ====== لوحة المدير (Admin) ====== -->
+                <!-- لوحة المدير -->
                 <div id="admin-panel" class="role-panel" style="display:none;">
-                    <h2>لوحة تحكم المدير</h2>
+                    <h2>لوحة المدير</h2>
                     <div class="section">
-                        <label>اسم المتجر:</label> <input type="text" id="store-name">
-                        <label>الشروط والأحكام:</label> <textarea id="terms-input" rows="3"></textarea>
-                        <label>صور المتجر (الشعار، الخلفية، الشحن):</label> <input type="file" id="store-images" multiple>
-                        <button onclick="saveStoreSettings()">حفظ إعدادات المتجر</button>
+                        <label>اسم المتجر:</label><input type="text" id="store-name"><button onclick="saveStoreSettings()">حفظ</button>
                     </div>
                     <div class="section">
-                        <label>إضافة طريقة دفع (شام كاش، بينانس، بنكي):</label>
-                        <select id="payment-type"><option value="shamcash">شام كاش</option><option value="binance">Binance Pay</option><option value="bank">حوالة بنكية</option></select>
-                        <input type="text" id="payment-config" placeholder="أدخل رقم المحفظة أو الحساب">
-                        <button onclick="addPaymentMethod()">إضافة طريقة الدفع</button>
-                    </div>
-                    <div class="section">
-                        <label>طلبات تعبئة رصيد العملاء:</label>
+                        <h3>طلبات التعبئة (قبول/رفض)</h3>
                         <div id="admin-topups"></div>
                     </div>
                     <div class="section">
-                        <label>إدارة المستخدمين والموظفين:</label>
+                        <h3>إدارة المستخدمين</h3>
                         <div id="users-list"></div>
                     </div>
                 </div>
 
-                <!-- ====== لوحة معاون المدير (Co-Admin) ====== -->
+                <!-- لوحة معاون المدير -->
                 <div id="coadmin-panel" class="role-panel" style="display:none;">
-                    <h2>لوحة تحكم معاون المدير</h2>
+                    <h2>لوحة المعاون</h2>
                     <div class="section">
-                        <label>طلبات تعبئة رصيد العملاء (قبول/رفض):</label>
+                        <h3>طلبات التعبئة (قبول/رفض)</h3>
                         <div id="coadmin-topups"></div>
                     </div>
                 </div>
 
-                <!-- ====== لوحة المشرف (Supervisor) ====== -->
+                <!-- لوحة المشرف -->
                 <div id="supervisor-panel" class="role-panel" style="display:none;">
-                    <h2>لوحة تحكم المشرف</h2>
+                    <h2>لوحة المشرف</h2>
                     <div class="section">
-                        <label>إضافة منتج جديد:</label>
-                        <input type="text" id="prod-name" placeholder="اسم المنتج">
-                        <input type="number" id="prod-price" placeholder="السعر">
-                        <input type="file" id="prod-img">
-                        <button onclick="addProduct()">إضافة المنتج</button>
+                        <label>إضافة منتج:</label><input type="text" id="prod-name" placeholder="اسم المنتج"><input type="number" id="prod-price" placeholder="السعر"><button onclick="addProduct()">إضافة</button>
                     </div>
                     <div class="section">
-                        <label>منتجاتي (تعديل السعر فقط):</label>
+                        <h3>منتجاتي (تعديل السعر)</h3>
                         <div id="my-products-list"></div>
-                    </div>
-                    <div class="section">
-                        <label>خدمة العملاء (الرد على رسائل المستخدمين):</label>
-                        <div id="customer-support-chat"></div>
-                        <textarea id="support-reply" rows="2" placeholder="اكتب ردك هنا..."></textarea>
-                        <button onclick="replyToUser()">إرسال الرد</button>
                     </div>
                 </div>
 
-                <!-- ====== لوحة المستخدم (User) ====== -->
+                <!-- لوحة المستخدم -->
                 <div id="user-panel" class="role-panel" style="display:none;">
-                    <h2>المتجر الرئيسي</h2>
-                    <div class="section" id="shop-products"></div>
-                    
-                    <!-- قسم إضافة رصيد شام كاش الكامل -->
-                    <div id="topup-payment-wrapper" style="display:none;">
-                        <div class="section" style="background: #0d0d0d; border:1px solid #444;">
-                            <h3>إضافة رصيد عبر شام كاش</h3>
-                            <div style="text-align:center; margin-bottom:15px;">
-                                <div id="qrcode" style="background:white; padding:10px; display:inline-block; border-radius:10px;"></div>
-                                <p style="font-size:14px; color:#aaa; margin-top:5px;">امسح الـ QR باستخدام شام كاش</p>
-                            </div>
-                            <p><b>رقم المحفظة:</b> <span id="wallet-number">06cc35f089a2... (جارٍ التحميل)</span></p>
-                            <p><b>المبلغ المطلوب:</b> <span id="topup-amount-display">0</span> L.S</p>
-                            
-                            <div style="text-align:center; margin: 15px 0;">
-                                <div class="timer-circle" id="timer-circle">15</div>
-                                <p style="font-size:12px; color:#e74c3c;">يرجى إرسال المبلغ قبل انتهاء الوقت!</p>
-                            </div>
-                            
-                            <p><b>تعليمات الدفع:</b> ارسل المبلغ لرقم المحفظة المذكور، ثم ارفع صورة الإشعار واكتب رقم العملية أدناه.</p>
-                            
-                            <label>رقم العملية (من تطبيق شام كاش):</label>
-                            <input type="text" id="sham-transaction-id" placeholder="مثلاً: 123456789">
-                            
-                            <label>صورة إشعار الدفع:</label>
-                            <input type="file" id="receipt-image">
-                            
-                            <button onclick="completeShamCashTopup()" style="background:#2ecc71; width:100%; margin-top:10px;">إتمام الطلب</button>
-                        </div>
-                        <button onclick="closeTopupPage()" style="margin-top:10px;">⬅ رجوع للمتجر</button>
-                    </div>
+                    <h2>المتجر</h2>
+                    <div id="shop-products" class="section"></div>
                 </div>
             </div>
         </div>
@@ -187,4 +169,4 @@
 
     <script type="module" src="script.js"></script>
 </body>
-                                                               </html>
+</html>
