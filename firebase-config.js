@@ -1,11 +1,10 @@
-import firebase from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
-import 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js';
-import 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
-import 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// ضع بيانات مشروعك من Firebase Console هنا
 const firebaseConfig = {
-apiKey: "AIzaSyBdjRYnHjLTny3xIhJrkv3sCkazuQwKLnw",
+  apiKey: "AIzaSyBdjRYnHjLTny3xIhJrkv3sCkazuQwKLnw",
   authDomain: "engil-store.firebaseapp.com",
   projectId: "engil-store",
   storageBucket: "engil-store.firebasestorage.app",
@@ -14,9 +13,7 @@ apiKey: "AIzaSyBdjRYnHjLTny3xIhJrkv3sCkazuQwKLnw",
   measurementId: "G-MLF72EPX6G"
 };
 
-firebase.initializeApp(firebaseConfig);
-
-// التصدير باستخدام إصدار 10 compat (هذا هو الحل السحري لخطأ getAuth)
-export const auth = firebase.auth();
-export const db = firebase.firestore();
-export const storage = firebase.storage();
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
