@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متجرك الإلكتروني</title>
     <link rel="stylesheet" href="style.css">
+    <!-- مكتبة الخطوط -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <!-- مكتبة إنشاء كود QR (سنستخدمها لإنشاء كود شام كاش) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول وإنشاء الحساب -->
+    <!-- ========== 1. شاشة الدخول والإنشاء ========== -->
     <div id="auth-screen">
         <div class="auth-box">
-            
-            <!-- نموذج تسجيل الدخول -->
             <div id="login-form">
                 <h2>تسجيل الدخول</h2>
                 <input type="email" id="login-email" placeholder="البريد الإلكتروني">
@@ -24,8 +25,6 @@
                     <a href="#" onclick="resetPassword()">نسيت كلمة المرور؟</a>
                 </div>
             </div>
-
-            <!-- نموذج إنشاء حساب جديد (مخفي مبدئياً) -->
             <div id="signup-form" style="display:none;">
                 <h2>إنشاء حساب جديد</h2>
                 <input type="text" id="signup-name" placeholder="اسم المستخدم">
@@ -33,83 +32,159 @@
                 <input type="password" id="signup-password" placeholder="كلمة المرور">
                 <button onclick="handleSignUp()">إنشاء الحساب</button>
                 <div class="auth-links">
-                    <a href="#" onclick="toggleAuth('login')">لديك حساب بالفعل؟ سجل دخول</a>
+                    <a href="#" onclick="toggleAuth('login')">لديك حساب؟ سجل دخول</a>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- التطبيق الرئيسي (يظهر فقط بعد الدخول) -->
+    <!-- ========== 2. التطبيق الرئيسي ========== -->
     <div id="app-container" style="display:none;">
+        
+        <!-- القائمة الجانبية الكاملة -->
         <div id="sidebar">
             <div class="profile-area">
+                <img src="default-avatar.png" alt="User" class="user-avatar">
                 <h3 id="user-display-name">زائر</h3>
+                <p id="user-id-display" style="font-size:12px; color:#888;">معرف: ---</p>
                 <p id="user-role-display" class="user-role">مستخدم</p>
                 <div id="user-balance" class="balance">$ 0</div>
             </div>
-            <button onclick="logout()" class="logout-btn">تسجيل خروج</button>
+            
+            <!-- أزرار الإجراءات العلوية (مفضلة، شخصي، خروج) -->
+            <div class="top-actions">
+                <button class="action-btn">❤️</button>
+                <button class="action-btn">👤</button>
+                <button onclick="logout()" class="action-btn logout">🚪</button>
+            </div>
+
+            <!-- زر العملة -->
+            <button class="currency-toggle">🔄 SYP العملة الثانوية</button>
+
+            <!-- القائمة الكاملة (14 زر) -->
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item"><span>الرئيسية</span><span class="icon">🏠</span></a>
+                <a href="#" class="menu-item"><span>الاشعارات</span><span class="icon">🔔</span></a>
+                <a href="#" onclick="showTopupPage()" class="menu-item highlight"><span>إضافة رصيد</span><span class="icon">💰</span></a>
+                <a href="#" class="menu-item"><span>دفعاتي</span><span class="icon">💳</span></a>
+                <a href="#" class="menu-item"><span>محفظتي</span><span class="icon">🛒</span></a>
+                <a href="#" class="menu-item"><span>طلباتي</span><span class="icon">🧾</span></a>
+                <a href="#" class="menu-item"><span>وكولونا</span><span class="icon">🤝</span></a>
+                <a href="#" class="menu-item"><span>الحماية</span><span class="icon">🛡️</span></a>
+                <a href="#" class="menu-item"><span>تحقق الهوية</span><span class="icon">✅</span></a>
+                <a href="#" class="menu-item"><span>من نحن</span><span class="icon">ℹ️</span></a>
+            </nav>
+
+            <!-- الوضع الداكن -->
+            <div class="theme-toggle">
+                <span>الوضع الداكن</span>
+                <label class="switch">
+                    <input type="checkbox" checked onchange="toggleDarkMode()">
+                    <span class="slider round"></span>
+                </label>
+            </div>
         </div>
 
+        <!-- المحتوى الرئيسي -->
         <div id="main-content">
-            
-            <!-- 1. لوحة المدير -->
-            <div id="admin-panel" class="role-panel" style="display:none;">
-                <h2>لوحة تحكم المدير</h2>
-                <div class="section">
-                    <label>اسم المتجر:</label> <input type="text" id="store-name">
-                    <button onclick="saveStoreSettings()">حفظ الاسم</button>
+            <!-- زر إغلاق القائمة للجوال -->
+            <button class="close-sidebar" onclick="toggleSidebar()">☰</button>
+
+            <div id="role-content">
+                <!-- ====== لوحة المدير (Admin) ====== -->
+                <div id="admin-panel" class="role-panel" style="display:none;">
+                    <h2>لوحة تحكم المدير</h2>
+                    <div class="section">
+                        <label>اسم المتجر:</label> <input type="text" id="store-name">
+                        <label>الشروط والأحكام:</label> <textarea id="terms-input" rows="3"></textarea>
+                        <label>صور المتجر (الشعار، الخلفية، الشحن):</label> <input type="file" id="store-images" multiple>
+                        <button onclick="saveStoreSettings()">حفظ إعدادات المتجر</button>
+                    </div>
+                    <div class="section">
+                        <label>إضافة طريقة دفع (شام كاش، بينانس، بنكي):</label>
+                        <select id="payment-type"><option value="shamcash">شام كاش</option><option value="binance">Binance Pay</option><option value="bank">حوالة بنكية</option></select>
+                        <input type="text" id="payment-config" placeholder="أدخل رقم المحفظة أو الحساب">
+                        <button onclick="addPaymentMethod()">إضافة طريقة الدفع</button>
+                    </div>
+                    <div class="section">
+                        <label>طلبات تعبئة رصيد العملاء:</label>
+                        <div id="admin-topups"></div>
+                    </div>
+                    <div class="section">
+                        <label>إدارة المستخدمين والموظفين:</label>
+                        <div id="users-list"></div>
+                    </div>
                 </div>
-                <div class="section">
-                    <label>طلبات شحن الرصيد (موافقة / رفض):</label>
-                    <div id="admin-topups"></div>
+
+                <!-- ====== لوحة معاون المدير (Co-Admin) ====== -->
+                <div id="coadmin-panel" class="role-panel" style="display:none;">
+                    <h2>لوحة تحكم معاون المدير</h2>
+                    <div class="section">
+                        <label>طلبات تعبئة رصيد العملاء (قبول/رفض):</label>
+                        <div id="coadmin-topups"></div>
+                    </div>
                 </div>
-                <div class="section">
-                    <label>إدارة المستخدمين (حظر، تعيين مشرف):</label>
-                    <div id="users-list"></div>
+
+                <!-- ====== لوحة المشرف (Supervisor) ====== -->
+                <div id="supervisor-panel" class="role-panel" style="display:none;">
+                    <h2>لوحة تحكم المشرف</h2>
+                    <div class="section">
+                        <label>إضافة منتج جديد:</label>
+                        <input type="text" id="prod-name" placeholder="اسم المنتج">
+                        <input type="number" id="prod-price" placeholder="السعر">
+                        <input type="file" id="prod-img">
+                        <button onclick="addProduct()">إضافة المنتج</button>
+                    </div>
+                    <div class="section">
+                        <label>منتجاتي (تعديل السعر فقط):</label>
+                        <div id="my-products-list"></div>
+                    </div>
+                    <div class="section">
+                        <label>خدمة العملاء (الرد على رسائل المستخدمين):</label>
+                        <div id="customer-support-chat"></div>
+                        <textarea id="support-reply" rows="2" placeholder="اكتب ردك هنا..."></textarea>
+                        <button onclick="replyToUser()">إرسال الرد</button>
+                    </div>
+                </div>
+
+                <!-- ====== لوحة المستخدم (User) ====== -->
+                <div id="user-panel" class="role-panel" style="display:none;">
+                    <h2>المتجر الرئيسي</h2>
+                    <div class="section" id="shop-products"></div>
+                    
+                    <!-- قسم إضافة رصيد شام كاش الكامل -->
+                    <div id="topup-payment-wrapper" style="display:none;">
+                        <div class="section" style="background: #0d0d0d; border:1px solid #444;">
+                            <h3>إضافة رصيد عبر شام كاش</h3>
+                            <div style="text-align:center; margin-bottom:15px;">
+                                <div id="qrcode" style="background:white; padding:10px; display:inline-block; border-radius:10px;"></div>
+                                <p style="font-size:14px; color:#aaa; margin-top:5px;">امسح الـ QR باستخدام شام كاش</p>
+                            </div>
+                            <p><b>رقم المحفظة:</b> <span id="wallet-number">06cc35f089a2... (جارٍ التحميل)</span></p>
+                            <p><b>المبلغ المطلوب:</b> <span id="topup-amount-display">0</span> L.S</p>
+                            
+                            <div style="text-align:center; margin: 15px 0;">
+                                <div class="timer-circle" id="timer-circle">15</div>
+                                <p style="font-size:12px; color:#e74c3c;">يرجى إرسال المبلغ قبل انتهاء الوقت!</p>
+                            </div>
+                            
+                            <p><b>تعليمات الدفع:</b> ارسل المبلغ لرقم المحفظة المذكور، ثم ارفع صورة الإشعار واكتب رقم العملية أدناه.</p>
+                            
+                            <label>رقم العملية (من تطبيق شام كاش):</label>
+                            <input type="text" id="sham-transaction-id" placeholder="مثلاً: 123456789">
+                            
+                            <label>صورة إشعار الدفع:</label>
+                            <input type="file" id="receipt-image">
+                            
+                            <button onclick="completeShamCashTopup()" style="background:#2ecc71; width:100%; margin-top:10px;">إتمام الطلب</button>
+                        </div>
+                        <button onclick="closeTopupPage()" style="margin-top:10px;">⬅ رجوع للمتجر</button>
+                    </div>
                 </div>
             </div>
-
-            <!-- 2. لوحة معاون المدير -->
-            <div id="coadmin-panel" class="role-panel" style="display:none;">
-                <h2>لوحة تحكم معاون المدير</h2>
-                <div class="section">
-                    <label>طلبات شحن الرصيد (موافقة / رفض):</label>
-                    <div id="coadmin-topups"></div>
-                </div>
-            </div>
-
-            <!-- 3. لوحة المشرف -->
-            <div id="supervisor-panel" class="role-panel" style="display:none;">
-                <h2>لوحة تحكم المشرف</h2>
-                <div class="section">
-                    <label>إضافة منتج جديد:</label>
-                    <input type="text" id="prod-name" placeholder="اسم المنتج">
-                    <input type="number" id="prod-price" placeholder="السعر">
-                    <input type="file" id="prod-img">
-                    <button onclick="addProduct()">إضافة المنتج</button>
-                </div>
-                <div class="section">
-                    <label>منتجاتي (تعديل الأسعار):</label>
-                    <div id="my-products-list"></div>
-                </div>
-            </div>
-
-            <!-- 4. لوحة المستخدم العادي -->
-            <div id="user-panel" class="role-panel" style="display:none;">
-                <h2>صفحة المتجر</h2>
-                <div class="section" id="shop-products"></div>
-                
-                <div class="section">
-                    <label>إضافة رصيد (شام كاش):</label>
-                    <input type="number" id="topup-amount" placeholder="المبلغ">
-                    <button onclick="sendTopup()">طلب شحن</button>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <script type="module" src="script.js"></script>
 </body>
-</html>
+                                                               </html>
