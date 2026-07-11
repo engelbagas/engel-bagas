@@ -12,16 +12,23 @@ body {
 }
 .login-box { 
     background: #1e1e1e; padding: 30px; border-radius: 15px; 
-    width: 300px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    width: 320px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
+.login-box h2 { margin-top: 0; margin-bottom: 20px; }
 .login-box input { 
     width: 90%; padding: 10px; margin: 10px 0; border-radius: 8px; border: none; 
-    background: #333; color: white;
+    background: #333; color: white; outline: none;
 }
 .login-box button { 
     width: 100%; padding: 10px; background: #4CAF50; border: none; 
-    border-radius: 8px; color: white; font-weight: bold; cursor: pointer;
+    border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px;
 }
+.form-links { 
+    display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 15px;
+}
+.form-links a { color: #3498db; text-decoration: none; font-size: 14px; cursor: pointer; transition: 0.3s;}
+.form-links a:hover { text-decoration: underline; color: #5dade2; }
+
 #app-container { display: flex; height: 100vh; }
 #sidebar { 
     width: 250px; background: #1e1e1e; padding: 20px; 
@@ -29,7 +36,7 @@ body {
 }
 .profile-area { text-align: center; }
 .user-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #4CAF50; }
-.user-role { color: #4CAF50; font-size: 14px; }
+.user-role { color: #4CAF50; font-size: 14px; margin: 5px 0; }
 .balance { background: #2a2a2a; padding: 10px; border-radius: 10px; margin: 10px 0; font-weight: bold; }
 .logout-btn { background: #e74c3c; padding: 10px; border: none; border-radius: 8px; color: white; cursor: pointer; margin-top: auto;}
 #main-content { flex: 1; padding: 20px; overflow-y: auto; }
@@ -39,10 +46,6 @@ body {
     background: #2a2a2a; border: 1px solid #444; color: white; 
     padding: 8px; border-radius: 5px; margin: 5px 0; width: 100%; box-sizing: border-box;
 }
-button { 
-    background: #3498db; color: white; border: none; padding: 8px 15px; 
-    border-radius: 5px; cursor: pointer; margin: 5px 0;
-}
-button:hover { opacity: 0.9; }
+button:active { transform: scale(0.98); }
 .approve-btn { background: #2ecc71; }
 .reject-btn { background: #e74c3c; }
