@@ -22,7 +22,7 @@ window.resetPassword = async () => {
     }
 }
 
-window.handleSignUp = async () => {
+window.handleSignUp = async function() {
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const pass = document.getElementById('signup-password').value;
@@ -33,8 +33,9 @@ window.handleSignUp = async () => {
         const userCred = await createUserWithEmailAndPassword(auth, email, pass);
         await setDoc(doc(db, "users", userCred.user.uid), { displayName: name, email, role, balance: 0, isBanned: false });
         alert(`تم الإنشاء! دورك: ${role === 'admin' ? 'مدير' : 'مستخدم'}`);
-    } catch(error) { 
-        alert(error.code === 'auth/email-already-in-use' ? "البريد مستخدم!" : "خطأ في التسجيل!"); 
+    } catch(error) {
+        // هنا رح يظهر لك كود الخطأ الحقيقي عشان تعرف شو المشكلة بالضبط
+        alert("حدث خطأ أثناء التسجيل:\nالكود: " + error.code + "\nالرسالة: " + error.message);
     }
 }
 
