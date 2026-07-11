@@ -5,18 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متجرك الإلكتروني</title>
     <link rel="stylesheet" href="style.css">
-    <!-- نوع الخط -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- 1. شاشة تسجيل الدخول -->
+    <!-- 1. شاشة تسجيل الدخول / إنشاء حساب -->
     <div id="login-screen">
         <div class="login-box">
-            <h2>تسجيل الدخول</h2>
-            <input type="email" id="login-email" placeholder="البريد الإلكتروني" required>
-            <input type="password" id="login-password" placeholder="كلمة المرور" required>
-            <button onclick="handleLogin()">دخول</button>
+            
+            <!-- قسم تسجيل الدخول -->
+            <div id="login-form">
+                <h2>تسجيل الدخول</h2>
+                <input type="email" id="login-email" placeholder="البريد الإلكتروني" required>
+                <input type="password" id="login-password" placeholder="كلمة المرور" required>
+                <button onclick="handleLogin()">دخول</button>
+                <div class="form-links">
+                    <a href="#" onclick="toggleAuthForm('signup')">إنشاء حساب جديد</a>
+                    <a href="#" onclick="resetPassword()">نسيت كلمة المرور؟</a>
+                </div>
+            </div>
+
+            <!-- قسم إنشاء حساب جديد (مخفي مبدئياً) -->
+            <div id="signup-form" style="display: none;">
+                <h2>إنشاء حساب جديد</h2>
+                <input type="text" id="signup-name" placeholder="اسم المستخدم" required>
+                <input type="email" id="signup-email" placeholder="البريد الإلكتروني" required>
+                <input type="password" id="signup-password" placeholder="كلمة المرور" required>
+                <button onclick="handleSignUp()">إنشاء الحساب</button>
+                <div class="form-links">
+                    <a href="#" onclick="toggleAuthForm('login')">لديك حساب بالفعل؟ سجل دخول</a>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -41,7 +61,6 @@
             <!-- ========== لوحة المدير (Admin) - مخفية مبدئياً ========== -->
             <div id="admin-panel" class="role-panel" style="display: none;">
                 <h2>لوحة تحكم المدير</h2>
-                
                 <div class="admin-section">
                     <h3>إعدادات المتجر (أسماء، شروط، صور)</h3>
                     <label>اسم المتجر:</label> <input type="text" id="store-name-input">
@@ -49,7 +68,6 @@
                     <label>صورة الشحن:</label> <input type="file" id="shipping-image-input">
                     <button onclick="saveStoreSettings()">حفظ إعدادات المتجر</button>
                 </div>
-
                 <div class="admin-section">
                     <h3>إدارة طرق الدفع</h3>
                     <select id="payment-type-dropdown">
@@ -61,12 +79,10 @@
                     <input type="text" id="new-payment-config" placeholder="بيانات طريقة الدفع (رقم الحساب)">
                     <button onclick="addPaymentMethod()">إضافة طريقة دفع</button>
                 </div>
-
                 <div class="admin-section">
                     <h3>إدارة المستخدمين (حظر، فك حظر، تعيين مشرف)</h3>
                     <div id="users-management-list"></div>
                 </div>
-
                 <div class="admin-section" id="topup-requests-area">
                     <h3>طلبات تعبئة الرصيد (موافقة / رفض)</h3>
                     <div id="topup-requests-list"></div>
@@ -114,8 +130,7 @@
         </div>
     </div>
 
-    <!-- 3. استيراد ملفات الجافا سكريبت -->
-    <script type="module" src="firebase-config.js"></script>
+    <!-- 3. استيراد ملف الجافا سكريبت (بدون ملف الكونفيغ لأنه جاهز عندك) -->
     <script type="module" src="script.js"></script>
 </body>
-</html>
+                        </html>
