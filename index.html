@@ -9,128 +9,107 @@
 </head>
 <body>
 
-    <!-- 1. شاشة تسجيل الدخول / إنشاء حساب -->
-    <div id="login-screen">
-        <div class="login-box">
+    <!-- شاشة تسجيل الدخول وإنشاء الحساب -->
+    <div id="auth-screen">
+        <div class="auth-box">
             
-            <!-- قسم تسجيل الدخول -->
+            <!-- نموذج تسجيل الدخول -->
             <div id="login-form">
                 <h2>تسجيل الدخول</h2>
-                <input type="email" id="login-email" placeholder="البريد الإلكتروني" required>
-                <input type="password" id="login-password" placeholder="كلمة المرور" required>
+                <input type="email" id="login-email" placeholder="البريد الإلكتروني">
+                <input type="password" id="login-password" placeholder="كلمة المرور">
                 <button onclick="handleLogin()">دخول</button>
-                <div class="form-links">
-                    <a href="#" onclick="toggleAuthForm('signup')">إنشاء حساب جديد</a>
+                <div class="auth-links">
+                    <a href="#" onclick="toggleAuth('signup')">إنشاء حساب جديد</a>
                     <a href="#" onclick="resetPassword()">نسيت كلمة المرور؟</a>
                 </div>
             </div>
 
-            <!-- قسم إنشاء حساب جديد (مخفي مبدئياً) -->
-            <div id="signup-form" style="display: none;">
+            <!-- نموذج إنشاء حساب جديد (مخفي مبدئياً) -->
+            <div id="signup-form" style="display:none;">
                 <h2>إنشاء حساب جديد</h2>
-                <input type="text" id="signup-name" placeholder="اسم المستخدم" required>
-                <input type="email" id="signup-email" placeholder="البريد الإلكتروني" required>
-                <input type="password" id="signup-password" placeholder="كلمة المرور" required>
+                <input type="text" id="signup-name" placeholder="اسم المستخدم">
+                <input type="email" id="signup-email" placeholder="البريد الإلكتروني">
+                <input type="password" id="signup-password" placeholder="كلمة المرور">
                 <button onclick="handleSignUp()">إنشاء الحساب</button>
-                <div class="form-links">
-                    <a href="#" onclick="toggleAuthForm('login')">لديك حساب بالفعل؟ سجل دخول</a>
+                <div class="auth-links">
+                    <a href="#" onclick="toggleAuth('login')">لديك حساب بالفعل؟ سجل دخول</a>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- 2. التطبيق الرئيسي (مخفي حتى يتم الدخول) -->
-    <div id="app-container" style="display: none;">
-        
-        <!-- القائمة الجانبية -->
+    <!-- التطبيق الرئيسي (يظهر فقط بعد الدخول) -->
+    <div id="app-container" style="display:none;">
         <div id="sidebar">
             <div class="profile-area">
-                <img src="default-avatar.png" alt="User" class="user-avatar">
-                <h3 id="user-display-name">اسم المستخدم</h3>
+                <h3 id="user-display-name">زائر</h3>
                 <p id="user-role-display" class="user-role">مستخدم</p>
                 <div id="user-balance" class="balance">$ 0</div>
             </div>
-            <hr>
             <button onclick="logout()" class="logout-btn">تسجيل خروج</button>
         </div>
 
-        <!-- المحتوى الرئيسي -->
         <div id="main-content">
             
-            <!-- ========== لوحة المدير (Admin) - مخفية مبدئياً ========== -->
-            <div id="admin-panel" class="role-panel" style="display: none;">
+            <!-- 1. لوحة المدير -->
+            <div id="admin-panel" class="role-panel" style="display:none;">
                 <h2>لوحة تحكم المدير</h2>
-                <div class="admin-section">
-                    <h3>إعدادات المتجر (أسماء، شروط، صور)</h3>
-                    <label>اسم المتجر:</label> <input type="text" id="store-name-input">
-                    <label>الشروط والأحكام:</label> <textarea id="terms-input"></textarea>
-                    <label>صورة الشحن:</label> <input type="file" id="shipping-image-input">
-                    <button onclick="saveStoreSettings()">حفظ إعدادات المتجر</button>
+                <div class="section">
+                    <label>اسم المتجر:</label> <input type="text" id="store-name">
+                    <button onclick="saveStoreSettings()">حفظ الاسم</button>
                 </div>
-                <div class="admin-section">
-                    <h3>إدارة طرق الدفع</h3>
-                    <select id="payment-type-dropdown">
-                        <option value="shamcash">شام كاش (رقم محفظة)</option>
-                        <option value="binance">Binance Pay (عنوان محفظة)</option>
-                        <option value="bank">حوالة بنكية</option>
-                        <option value="office">حوالة مكتب</option>
-                    </select>
-                    <input type="text" id="new-payment-config" placeholder="بيانات طريقة الدفع (رقم الحساب)">
-                    <button onclick="addPaymentMethod()">إضافة طريقة دفع</button>
+                <div class="section">
+                    <label>طلبات شحن الرصيد (موافقة / رفض):</label>
+                    <div id="admin-topups"></div>
                 </div>
-                <div class="admin-section">
-                    <h3>إدارة المستخدمين (حظر، فك حظر، تعيين مشرف)</h3>
-                    <div id="users-management-list"></div>
-                </div>
-                <div class="admin-section" id="topup-requests-area">
-                    <h3>طلبات تعبئة الرصيد (موافقة / رفض)</h3>
-                    <div id="topup-requests-list"></div>
+                <div class="section">
+                    <label>إدارة المستخدمين (حظر، تعيين مشرف):</label>
+                    <div id="users-list"></div>
                 </div>
             </div>
 
-            <!-- ========== لوحة معاون المدير (Co-Admin) - مخفية مبدئياً ========== -->
-            <div id="co-admin-panel" class="role-panel" style="display: none;">
+            <!-- 2. لوحة معاون المدير -->
+            <div id="coadmin-panel" class="role-panel" style="display:none;">
                 <h2>لوحة تحكم معاون المدير</h2>
-                <div class="admin-section">
-                    <h3>طلبات تعبئة الرصيد (موافقة / رفض)</h3>
-                    <div id="co-topup-requests-list"></div>
+                <div class="section">
+                    <label>طلبات شحن الرصيد (موافقة / رفض):</label>
+                    <div id="coadmin-topups"></div>
                 </div>
             </div>
 
-            <!-- ========== لوحة المشرف (Supervisor) - مخفية مبدئياً ========== -->
-            <div id="supervisor-panel" class="role-panel" style="display: none;">
+            <!-- 3. لوحة المشرف -->
+            <div id="supervisor-panel" class="role-panel" style="display:none;">
                 <h2>لوحة تحكم المشرف</h2>
-                <div class="admin-section">
-                    <h3>إضافة منتج جديد</h3>
-                    <input type="text" id="product-name" placeholder="اسم المنتج">
-                    <input type="number" id="product-price" placeholder="السعر">
-                    <input type="file" id="product-image">
+                <div class="section">
+                    <label>إضافة منتج جديد:</label>
+                    <input type="text" id="prod-name" placeholder="اسم المنتج">
+                    <input type="number" id="prod-price" placeholder="السعر">
+                    <input type="file" id="prod-img">
                     <button onclick="addProduct()">إضافة المنتج</button>
                 </div>
-                <div class="admin-section">
-                    <h3>منتجاتي (تعديل أسعار منتجاتي فقط)</h3>
+                <div class="section">
+                    <label>منتجاتي (تعديل الأسعار):</label>
                     <div id="my-products-list"></div>
                 </div>
             </div>
 
-            <!-- ========== لوحة المستخدم العادي (User) - مخفية مبدئياً ========== -->
-            <div id="user-panel" class="role-panel" style="display: none;">
-                <h2>المتجر</h2>
-                <div id="products-shop-list"></div>
+            <!-- 4. لوحة المستخدم العادي -->
+            <div id="user-panel" class="role-panel" style="display:none;">
+                <h2>صفحة المتجر</h2>
+                <div class="section" id="shop-products"></div>
                 
-                <div class="admin-section">
-                    <h3>إضافة رصيد (شام كاش)</h3>
-                    <div id="available-payment-methods"></div>
-                    <input type="number" id="topup-amount" placeholder="المبلغ المراد شحنه">
-                    <button onclick="createTopupRequest()">إتمام طلب الشحن</button>
+                <div class="section">
+                    <label>إضافة رصيد (شام كاش):</label>
+                    <input type="number" id="topup-amount" placeholder="المبلغ">
+                    <button onclick="sendTopup()">طلب شحن</button>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- 3. استيراد ملف الجافا سكريبت (بدون ملف الكونفيغ لأنه جاهز عندك) -->
     <script type="module" src="script.js"></script>
 </body>
-                        </html>
+</html>
